@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef, ChangeEvent } from 'react';
-import { Clock, MapPin, Users, Trophy, ChevronRight, AlertCircle, Upload, Download, Settings, X, FileSpreadsheet } from 'lucide-react';
+import { Clock, MapPin, Users, Trophy, ChevronRight, AlertCircle, Upload, Download, Settings, X, FileSpreadsheet, Maximize, Minimize } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
 
@@ -38,7 +38,28 @@ export default function App() {
   const [now, setNow] = useState(new Date());
   const [matches, setMatches] = useState(INITIAL_MATCH_DATA);
   const [showSettings, setShowSettings] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 监听全屏状态变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   // 实时更新时间
   useEffect(() => {
@@ -203,7 +224,7 @@ export default function App() {
   }, [now, matches]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-amber-500 selection:text-black overflow-hidden flex flex-col relative">
+    <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-amber-500 selection:text-black overflow-hidden flex flex-col relative">
       {/* 顶部：标题 + 当前日期时间 */}
       <header className="border-b-4 border-amber-500 bg-[#111] p-6 flex justify-between items-center shadow-2xl relative z-20">
         <div className="flex items-center gap-4">
@@ -222,12 +243,26 @@ export default function App() {
               {formattedTime}
             </div>
           </div>
-          <button 
-            onClick={() => setShowSettings(true)}
-            className="p-3 bg-[#222] hover:bg-[#333] rounded-full transition-colors border border-[#444]"
-          >
-            <Settings className="w-8 h-8 text-gray-400" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={toggleFullscreen}
+              className="p-3 bg-[#222] hover:bg-[#333] rounded-full transition-colors border border-[#444]"
+              title={isFullscreen ? "退出全屏" : "全屏显示"}
+            >
+              {isFullscreen ? (
+                <Minimize className="w-8 h-8 text-gray-400" />
+              ) : (
+                <Maximize className="w-8 h-8 text-gray-400" />
+              )}
+            </button>
+            <button 
+              onClick={() => setShowSettings(true)}
+              className="p-3 bg-[#222] hover:bg-[#333] rounded-full transition-colors border border-[#444]"
+              title="设置"
+            >
+              <Settings className="w-8 h-8 text-gray-400" />
+            </button>
+          </div>
         </div>
       </header>
 
