@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef, ChangeEvent } from 'react';
-import { Clock, MapPin, Users, Trophy, ChevronRight, AlertCircle, Upload, Download, Settings, X, FileSpreadsheet, Maximize, Minimize } from 'lucide-react';
+import { Clock, MapPin, Users, Trophy, ChevronRight, AlertCircle, Upload, Download, Settings, X, FileSpreadsheet, Maximize, Minimize, Volume2, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
 
@@ -39,8 +39,21 @@ export default function App() {
   const [matches, setMatches] = useState(INITIAL_MATCH_DATA);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [broadcastMinutes, setBroadcastMinutes] = useState<number[]>([5, 10]);
+  const [isBroadcastEnabled, setIsBroadcastEnabled] = useState(true);
+  const [broadcastHistory, setBroadcastHistory] = useState<Record<string, number[]>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 语音播报函数
+  const speak = (text: string) => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.9; // 稍微慢一点，更清晰
+    window.speechSynthesis.speak(utterance);
+  };
 
   // 监听全屏状态变化
   useEffect(() => {
@@ -222,6 +235,36 @@ export default function App() {
 
     return { currentMatches: current, nextMatches: next, status: 'ONGOING' };
   }, [now, matches]);
+
+  // 语音播报触发逻辑
+  useEffect(() => {
+    if (!isBroadcastEnabled || currentMatches.length === 0 || nextMatches.length === 0) return;
+
+    currentMatches.forEach(currentMatch => {
+      const [endH, endM] = currentMatch.endTime.split(':').map(Number);
+      const endTime = new Date(now);
+      endTime.setHours(endH, endM, 0, 0);
+
+      const diffMs = endTime.getTime() - now.getTime();
+      const diffMinutes = Math.ceil(diffMs / 60000); // 使用向上取整，确保在进入那一分钟时触发
+
+      if (broadcastMinutes.includes(diffMinutes) && diffMinutes > 0) {
+        const history = broadcastHistory[currentMatch.id] || [];
+        if (!history.includes(diffMinutes)) {
+          // 找到该场地对应的下一场比赛（如果存在）
+          const nextForThisField = nextMatches.find(m => m.field === currentMatch.field) || nextMatches[0];
+          
+          const text = `本场比赛将在${diffMinutes}分钟后结束，请下一场比赛对阵双方：${nextForThisField.teamA} 和 ${nextForThisField.teamB}，做好比赛准备。`;
+          speak(text);
+          
+          setBroadcastHistory(prev => ({
+            ...prev,
+            [currentMatch.id]: [...(prev[currentMatch.id] || []), diffMinutes]
+          }));
+        }
+      }
+    });
+  }, [now, currentMatches, nextMatches, isBroadcastEnabled, broadcastMinutes, broadcastHistory]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-amber-500 selection:text-black overflow-hidden flex flex-col relative">
@@ -444,24 +487,33 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowSettings(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#1a1a1a] border-2 border-[#333] rounded-2xl p-8 max-w-md w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#1a1a1a] border-2 border-[#333] rounded-2xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[90vh]"
             >
-              <div className="flex justify-between items-center mb-8">
+              {/* 固定头部 */}
+              <div className="flex justify-between items-center p-6 border-b border-[#333]">
                 <h3 className="text-2xl font-bold flex items-center gap-3">
-                  <Settings className="text-amber-500" /> 数据导入设置
+                  <Settings className="text-amber-500" /> 系统设置
                 </h3>
-                <button onClick={() => setShowSettings(false)} className="text-gray-500 hover:text-white">
-                  <X size={24} />
+                <button 
+                  onClick={() => setShowSettings(false)} 
+                  className="p-2 hover:bg-[#333] rounded-full text-gray-400 hover:text-white transition-colors"
+                  title="关闭"
+                >
+                  <X size={28} />
                 </button>
               </div>
 
-              <div className="space-y-6">
+              {/* 可滚动内容区 */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                {/* 第一步：下载模板 */}
                 <div className="p-6 bg-[#222] rounded-xl border border-[#333] space-y-4">
                   <div className="flex items-center gap-3 text-amber-500 font-bold">
                     <Download size={20} /> 第一步：下载模板
@@ -475,6 +527,56 @@ export default function App() {
                   </button>
                 </div>
 
+                {/* 语音播报设置 */}
+                <div className="p-6 bg-[#222] rounded-xl border border-[#333] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-green-500 font-bold">
+                      <Volume2 size={20} /> 语音播报设置
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={isBroadcastEnabled} 
+                        onChange={(e) => setIsBroadcastEnabled(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    </label>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="text-gray-400 text-sm">设置距离比赛结束多少分钟时进行语音提醒：</p>
+                    <div className="flex flex-wrap gap-2">
+                      {broadcastMinutes.sort((a, b) => b - a).map((min) => (
+                        <div key={min} className="flex items-center gap-2 bg-[#333] px-3 py-1 rounded-lg border border-[#444]">
+                          <span className="text-white font-mono">{min} 分钟</span>
+                          <button 
+                            onClick={() => setBroadcastMinutes(prev => prev.filter(m => m !== min))}
+                            className="text-gray-500 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => {
+                          const val = prompt("请输入提醒分钟数（距离结束）：");
+                          if (val && !isNaN(Number(val))) {
+                            const num = Math.abs(Math.floor(Number(val)));
+                            if (num > 0 && !broadcastMinutes.includes(num)) {
+                              setBroadcastMinutes(prev => [...prev, num]);
+                            }
+                          }
+                        }}
+                        className="flex items-center gap-1 bg-green-600/20 text-green-500 px-3 py-1 rounded-lg border border-green-600/30 hover:bg-green-600/30 transition-colors"
+                      >
+                        <Plus size={14} /> 添加
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 第二步：上传数据 */}
                 <div className="p-6 bg-[#222] rounded-xl border border-[#333] space-y-4">
                   <div className="flex items-center gap-3 text-blue-500 font-bold">
                     <Upload size={20} /> 第二步：上传数据
@@ -494,11 +596,11 @@ export default function App() {
                     <Upload size={20} /> 上传并导入赛程
                   </button>
                 </div>
-              </div>
 
-              <p className="mt-8 text-center text-gray-600 text-xs">
-                提示：导入新数据后将覆盖当前显示的赛程。
-              </p>
+                <p className="text-center text-gray-600 text-xs pb-4">
+                  提示：导入新数据后将覆盖当前显示的赛程。
+                </p>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -511,6 +613,19 @@ export default function App() {
         }
         .animate-marquee {
           animation: marquee 20s linear infinite;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #1a1a1a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #333;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #444;
         }
       `}</style>
     </div>
