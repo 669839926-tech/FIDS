@@ -310,7 +310,7 @@ export default function App() {
       </header>
 
       {/* 中间：主展示区 */}
-      <main className="flex-1 p-8 flex flex-col gap-6 relative z-10">
+      <main className="flex-1 p-4 sm:p-8 flex flex-col gap-4 sm:gap-6 relative z-10 overflow-hidden">
         <AnimatePresence mode="wait">
           {/* 当前比赛 / 状态提示 */}
           <motion.section 
@@ -318,89 +318,89 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="flex-1 flex flex-col"
+            className="flex-[2] flex flex-col min-h-0"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-3 h-8 bg-amber-500"></div>
-              <h2 className="text-3xl font-bold uppercase tracking-wider text-gray-400">
+            <div className="flex items-center gap-3 mb-2 sm:mb-4">
+              <div className="w-3 h-6 sm:h-8 bg-amber-500"></div>
+              <h2 className="text-xl sm:text-3xl font-bold uppercase tracking-wider text-gray-400">
                 {status === 'ONGOING' ? 'Current Matches / 当前比赛' : 'Status / 赛事状态'}
               </h2>
             </div>
 
-            <div className="flex-1 flex flex-col gap-4">
+            <div className="flex-1 flex flex-col gap-3 sm:gap-4 min-h-0 overflow-y-auto custom-scrollbar pr-2">
               {currentMatches.length > 0 ? (
                 currentMatches.map((match) => (
-                  <div key={match.id} className="flex-1 bg-[#151515] border-2 border-[#333] rounded-xl p-8 flex flex-col justify-center relative overflow-hidden shadow-inner">
+                  <div key={match.id} className="flex-shrink-0 bg-[#151515] border-2 border-[#333] rounded-xl p-4 sm:p-6 flex flex-col justify-center relative overflow-hidden shadow-inner">
                     <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
                     
-                    <div className="grid grid-cols-12 gap-8 items-center relative z-10">
+                    <div className="grid grid-cols-12 gap-4 sm:gap-8 items-center relative z-10">
                       <div className="col-span-3">
-                        <div className="text-amber-500 font-mono text-lg mb-1 uppercase tracking-widest">Time / 比赛时间</div>
-                        <div className="text-6xl font-black tabular-nums leading-none">{match.startTime}</div>
-                        <div className="text-xl text-gray-500 font-mono mt-1">~ {match.endTime}</div>
+                        <div className="text-amber-500 font-mono text-sm sm:text-lg mb-1 uppercase tracking-widest">Time / 比赛时间</div>
+                        <div className="text-3xl sm:text-5xl lg:text-6xl font-black tabular-nums leading-none">{match.startTime}</div>
+                        <div className="text-sm sm:text-xl text-gray-500 font-mono mt-1">~ {match.endTime}</div>
                       </div>
 
-                      <div className="col-span-6 flex flex-col items-center gap-4">
-                        <div className="flex items-center justify-center gap-8 w-full">
+                      <div className="col-span-6 flex flex-col items-center gap-2 sm:gap-4">
+                        <div className="flex items-center justify-center gap-4 sm:gap-8 w-full">
                           <div className="flex-1 text-right">
-                            <div className="text-6xl font-black tracking-tight text-white uppercase truncate">{match.teamA}</div>
+                            <div className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white uppercase truncate">{match.teamA}</div>
                           </div>
-                          <div className="text-4xl font-black text-amber-500 italic">VS</div>
+                          <div className="text-xl sm:text-4xl font-black text-amber-500 italic">VS</div>
                           <div className="flex-1 text-left">
-                            <div className="text-6xl font-black tracking-tight text-white uppercase truncate">{match.teamB}</div>
+                            <div className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white uppercase truncate">{match.teamB}</div>
                           </div>
                         </div>
-                        <div className="inline-flex items-center gap-3 px-4 py-1 bg-amber-500 text-black font-bold text-xl rounded-full uppercase tracking-tighter">
-                          <Trophy size={20} />
+                        <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1 bg-amber-500 text-black font-bold text-sm sm:text-xl rounded-full uppercase tracking-tighter">
+                          <Trophy size={16} />
                           {match.stage}
                         </div>
                       </div>
 
-                      <div className="col-span-3 text-right space-y-4 border-l-2 border-[#333] pl-8">
+                      <div className="col-span-3 text-right space-y-2 sm:space-y-4 border-l-2 border-[#333] pl-4 sm:pl-8">
                         <div>
-                          <div className="text-amber-500 font-mono text-lg mb-0 uppercase tracking-widest flex items-center justify-end gap-2">
-                            <MapPin size={18} /> Field / 场地
+                          <div className="text-amber-500 font-mono text-xs sm:text-lg mb-0 uppercase tracking-widest flex items-center justify-end gap-2">
+                            <MapPin size={14} /> Field / 场地
                           </div>
-                          <div className="text-3xl font-bold">{match.field}</div>
+                          <div className="text-lg sm:text-3xl font-bold">{match.field}</div>
                         </div>
                         <div>
-                          <div className="text-amber-500 font-mono text-lg mb-0 uppercase tracking-widest flex items-center justify-end gap-2">
-                            <Users size={18} /> Grade / 组别
+                          <div className="text-amber-500 font-mono text-xs sm:text-lg mb-0 uppercase tracking-widest flex items-center justify-end gap-2">
+                            <Users size={14} /> Grade / 组别
                           </div>
-                          <div className="text-3xl font-bold">{match.grade}</div>
+                          <div className="text-lg sm:text-3xl font-bold">{match.grade}</div>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex-1 bg-[#151515] border-2 border-[#333] rounded-xl p-10 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-inner">
+                <div className="flex-1 bg-[#151515] border-2 border-[#333] rounded-xl p-6 sm:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-inner">
                   {status === 'SOON' && (
                     <>
-                      <Clock className="w-24 h-24 text-amber-500 mb-6 animate-pulse" />
-                      <h3 className="text-6xl font-black uppercase tracking-tighter mb-4">Upcoming Events</h3>
-                      <p className="text-4xl text-gray-400 font-bold">今日赛事即将开始</p>
+                      <Clock className="w-16 h-16 sm:w-24 h-24 text-amber-500 mb-4 sm:mb-6 animate-pulse" />
+                      <h3 className="text-3xl sm:text-6xl font-black uppercase tracking-tighter mb-2 sm:mb-4">Upcoming Events</h3>
+                      <p className="text-xl sm:text-4xl text-gray-400 font-bold">今日赛事即将开始</p>
                     </>
                   )}
                   {status === 'ENDED' && (
                     <>
-                      <AlertCircle className="w-24 h-24 text-gray-500 mb-6" />
-                      <h3 className="text-6xl font-black uppercase tracking-tighter mb-4 text-gray-500">All Matches Ended</h3>
-                      <p className="text-4xl text-gray-600 font-bold">今日比赛已全部结束</p>
+                      <AlertCircle className="w-16 h-16 sm:w-24 h-24 text-gray-500 mb-4 sm:mb-6" />
+                      <h3 className="text-3xl sm:text-6xl font-black uppercase tracking-tighter mb-2 sm:mb-4 text-gray-500">All Matches Ended</h3>
+                      <p className="text-xl sm:text-4xl text-gray-600 font-bold">今日比赛已全部结束</p>
                     </>
                   )}
                   {status === 'BETWEEN' && (
                     <>
-                      <Clock className="w-24 h-24 text-amber-500 mb-6" />
-                      <h3 className="text-6xl font-black uppercase tracking-tighter mb-4">Intermission</h3>
-                      <p className="text-4xl text-gray-400 font-bold">中场休息 / 等待下场比赛</p>
+                      <Clock className="w-16 h-16 sm:w-24 h-24 text-amber-500 mb-4 sm:mb-6" />
+                      <h3 className="text-3xl sm:text-6xl font-black uppercase tracking-tighter mb-2 sm:mb-4">Intermission</h3>
+                      <p className="text-xl sm:text-4xl text-gray-400 font-bold">中场休息 / 等待下场比赛</p>
                     </>
                   )}
                   {status === 'NO_MATCHES_TODAY' && (
                     <>
-                      <AlertCircle className="w-24 h-24 text-gray-500 mb-6" />
-                      <h3 className="text-6xl font-black uppercase tracking-tighter mb-4 text-gray-500">No Schedule</h3>
-                      <p className="text-4xl text-gray-600 font-bold">今日暂无比赛安排</p>
+                      <AlertCircle className="w-16 h-16 sm:w-24 h-24 text-gray-500 mb-4 sm:mb-6" />
+                      <h3 className="text-3xl sm:text-6xl font-black uppercase tracking-tighter mb-2 sm:mb-4 text-gray-500">No Schedule</h3>
+                      <p className="text-xl sm:text-4xl text-gray-600 font-bold">今日暂无比赛安排</p>
                     </>
                   )}
                 </div>
@@ -413,47 +413,47 @@ export default function App() {
             <motion.section 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col gap-4"
+              className="flex-1 flex flex-col gap-2 sm:gap-4 min-h-0"
             >
               <div className="flex items-center gap-3">
-                <ChevronRight className="text-blue-500 w-8 h-8" />
-                <h2 className="text-2xl font-bold uppercase tracking-widest text-blue-500">
+                <ChevronRight className="text-blue-500 w-6 h-6 sm:w-8 h-8" />
+                <h2 className="text-lg sm:text-2xl font-bold uppercase tracking-widest text-blue-500">
                   Next Matches / 下一场比赛
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="flex-1 grid grid-cols-1 gap-2 sm:gap-4 overflow-y-auto custom-scrollbar pr-2">
                 {nextMatches.map((match) => (
-                  <div key={match.id} className="bg-[#111] border-l-8 border-blue-500 p-6 rounded-r-xl shadow-xl">
-                    <div className="grid grid-cols-12 gap-6 items-center">
+                  <div key={match.id} className="flex-shrink-0 bg-[#111] border-l-8 border-blue-500 p-3 sm:p-4 rounded-r-xl shadow-xl">
+                    <div className="grid grid-cols-12 gap-4 items-center">
                       <div className="col-span-2">
-                        <div className="text-gray-500 font-mono text-xs mb-1 uppercase tracking-widest">Start Time</div>
-                        <div className="text-4xl font-black text-white tabular-nums">{match.startTime}</div>
+                        <div className="text-gray-500 font-mono text-[10px] sm:text-xs mb-1 uppercase tracking-widest">Start Time</div>
+                        <div className="text-xl sm:text-4xl font-black text-white tabular-nums">{match.startTime}</div>
                       </div>
                       
-                      <div className="col-span-5 flex items-center gap-6">
-                        <div className="text-3xl font-bold text-white truncate">{match.teamA}</div>
-                        <div className="text-xl font-black text-blue-500 italic">VS</div>
-                        <div className="text-3xl font-bold text-white truncate">{match.teamB}</div>
+                      <div className="col-span-5 flex items-center gap-3 sm:gap-6">
+                        <div className="text-lg sm:text-3xl font-bold text-white truncate">{match.teamA}</div>
+                        <div className="text-sm sm:text-xl font-black text-blue-500 italic">VS</div>
+                        <div className="text-lg sm:text-3xl font-bold text-white truncate">{match.teamB}</div>
                       </div>
 
-                      <div className="col-span-3 space-y-1">
+                      <div className="col-span-3 space-y-0.5 sm:space-y-1">
                         <div className="flex items-center gap-2 text-blue-400">
-                          <Users size={16} />
-                          <span className="text-xl font-bold">{match.grade}</span>
+                          <Users size={14} />
+                          <span className="text-sm sm:text-xl font-bold">{match.grade}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-400">
-                          <Trophy size={16} />
-                          <span className="text-lg">{match.stage}</span>
+                          <Trophy size={14} />
+                          <span className="text-xs sm:text-lg">{match.stage}</span>
                         </div>
                       </div>
 
-                      <div className="col-span-2 text-right space-y-2">
+                      <div className="col-span-2 text-right space-y-1 sm:space-y-2">
                         <div className="flex items-center justify-end gap-2 text-white">
-                          <MapPin size={16} className="text-blue-500" />
-                          <span className="text-xl font-bold">{match.field}</span>
+                          <MapPin size={14} className="text-blue-500" />
+                          <span className="text-sm sm:text-xl font-bold">{match.field}</span>
                         </div>
-                        <div className="inline-block bg-blue-900/30 border border-blue-500/50 text-blue-400 px-3 py-1 rounded text-sm font-bold animate-pulse">
+                        <div className="hidden sm:inline-block bg-blue-900/30 border border-blue-500/50 text-blue-400 px-2 sm:px-3 py-0.5 sm:py-1 rounded text-[10px] sm:text-sm font-bold animate-pulse">
                           请做好准备
                         </div>
                       </div>
