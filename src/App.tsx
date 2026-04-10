@@ -209,31 +209,26 @@ export default function App() {
     const lastMatch = todayMatches[todayMatches.length - 1];
 
     // 查找当前正在进行的比赛 (最多取2场)
-    let current = todayMatches.filter(m => {
+    const current = todayMatches.filter(m => {
       const start = m.startTime.trim();
       const end = m.endTime.trim();
       return currentTimeStr >= start && currentTimeStr <= end;
     }).slice(0, 2);
     
-    // 优化：如果当前没有正在进行的比赛，且还没到最后一场结束时间，则将“下一场”提前显示为“当前比赛”
-    if (current.length === 0 && currentTimeStr <= lastMatch.endTime.trim()) {
-      const upcoming = todayMatches.find(m => m.startTime.trim() > currentTimeStr);
-      if (upcoming) {
-        current = [upcoming];
-      }
+    // 查找下一场比赛 (最多取2场)
+    const next = todayMatches.filter(m => m.startTime.trim() > currentTimeStr).slice(0, 2);
+
+    // 还没到第一场比赛
+    if (currentTimeStr < firstMatch.startTime.trim()) {
+      return { currentMatches: [], nextMatches: next, status: 'SOON' };
     }
-    
-    // 查找下一场比赛 (最多取2场)，排除已经在“当前比赛”中显示的
-    const next = todayMatches
-      .filter(m => m.startTime.trim() > currentTimeStr && !current.some(cm => cm.id === m.id))
-      .slice(0, 2);
 
     // 已经过了最后一场比赛
     if (currentTimeStr > lastMatch.endTime.trim()) {
       return { currentMatches: [], nextMatches: [], status: 'ENDED' };
     }
 
-    // 如果最终还是没有当前比赛（理论上只有在所有比赛结束后的极短时间内可能发生）
+    // 如果当前没有正在进行的比赛（处于两场之间）
     if (current.length === 0 && next.length > 0) {
       return { currentMatches: [], nextMatches: next, status: 'BETWEEN' };
     }
